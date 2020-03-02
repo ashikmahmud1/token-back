@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "token.app.jwtSecret",
+      "type": "java.lang.String",
+      "description": "Description for token.app.jwtSecret."
+    },
+    {
+      "name": "token.app.jwtExpirationMs",
+      "type": "java.lang.String",
+      "description": "Description for token.app.jwtExpirationMs."
+    }
+  ]
+}
