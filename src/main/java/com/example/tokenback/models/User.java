@@ -1,5 +1,6 @@
 package com.example.tokenback.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -51,6 +52,17 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date;
+
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Token> tokens;
+
+    public Set<Token> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(Set<Token> tokens) {
+        this.tokens = tokens;
+    }
 
     public User() {
     }

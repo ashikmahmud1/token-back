@@ -9,6 +9,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "counters")
@@ -36,6 +38,17 @@ public class Counter implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date
+
+    @OneToMany(mappedBy = "counter",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Token> tokens;
+
+    public Set<Token> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(Set<Token> tokens) {
+        this.tokens = tokens;
+    }
 
     public Counter() {
     }

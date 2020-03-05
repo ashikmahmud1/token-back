@@ -7,7 +7,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import java.io.Serializable;
 import java.util.Date;
 
 @Entity
@@ -15,11 +14,15 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
         allowGetters = true)
-public class Token implements Serializable {
+public class Token {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     // Token Number (String field)
     @NotBlank
@@ -46,22 +49,26 @@ public class Token implements Serializable {
     // We have to keep field user_id, customer_id, department_id and counter_id
 
     // User (Relational field) Which user called this token
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // Here we should not do the lazy loading data
+    @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
     private User user;
 
     // Customer (Relational field) Token generated for the customer
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // Here we should not do the lazy loading data
+    @OneToOne( optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
     // Department (Relational field) Under which department token added
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // Here we should not do the lazy loading data
+    @ManyToOne(optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 
     // Counter (Relational field) Under which counter token assigned
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // Here we should not do the lazy loading data
+    @ManyToOne(optional = false)
     @JoinColumn(name = "counter_id")
     private Counter counter;
 
