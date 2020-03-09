@@ -1,11 +1,8 @@
 package com.example.tokenback.controllers;
 
 import com.example.tokenback.models.*;
-import com.example.tokenback.repository.UserRepository;
+import com.example.tokenback.repository.*;
 import com.example.tokenback.schema.CustomToken;
-import com.example.tokenback.repository.CustomerRepository;
-import com.example.tokenback.repository.DepartmentRepository;
-import com.example.tokenback.repository.TokenRepository;
 import com.example.tokenback.schema.DepartmentReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -31,6 +28,9 @@ public class TokenController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    CounterRepository counterRepository;
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
@@ -102,6 +102,11 @@ public class TokenController {
 
         // check if there is counter_id in the customToken
         // get the counter by the counter_id and set token.setCounter(counter)
+        if (customToken.getCounter_id() != null) {
+            Counter counter = counterRepository.findById(customToken.getCounter_id())
+                    .orElseThrow(() -> new RuntimeException("Error: Counter not found."));
+            token.setCounter(counter);
+        }
 
         token.setPriority(customToken.getPriority());
         token.setToken_number(customToken.getToken_number());

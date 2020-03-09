@@ -42,17 +42,6 @@ public class Customer {
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date
 
-    @OneToOne(mappedBy = "customer",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Token token;
-
-    public Token getToken() {
-        return token;
-    }
-
-    public void setToken(Token token) {
-        this.token = token;
-    }
-
     public Customer() {
     }
 

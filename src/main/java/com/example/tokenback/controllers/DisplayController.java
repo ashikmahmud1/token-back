@@ -52,7 +52,8 @@ public class DisplayController {
 
     @GetMapping("/number/{number}")
     public Display getDisplayByNumber(@PathVariable(value = "number") Integer displayNumber) {
-        return displayRepository.findByNumber(displayNumber);
+        return displayRepository.findByNumber(displayNumber).
+                orElseThrow(() -> new RuntimeException("Error: Display is not found."));
     }
 
     // Get a Single Display

@@ -52,16 +52,6 @@ public class User {
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date;
 
-    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Token> tokens;
-
-    public Set<Token> getTokens() {
-        return tokens;
-    }
-
-    public void setTokens(Set<Token> tokens) {
-        this.tokens = tokens;
-    }
 
     public User() {
     }
