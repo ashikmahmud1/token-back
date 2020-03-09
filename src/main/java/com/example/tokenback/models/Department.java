@@ -8,11 +8,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "departments")
+@Table(name = "departments", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name")
+})
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
         allowGetters = true)
@@ -43,16 +44,8 @@ public class Department {
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date
 
-    @OneToMany(mappedBy = "department",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Token> tokens;
-
-    public Set<Token> getTokens() {
-        return tokens;
-    }
-
-    public void setTokens(Set<Token> tokens) {
-        this.tokens = tokens;
-    }
 
     public Department() {
     }
@@ -110,6 +103,14 @@ public class Department {
 
     public Date getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Set<Token> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(Set<Token> tokens) {
+        this.tokens = tokens;
     }
 
 }

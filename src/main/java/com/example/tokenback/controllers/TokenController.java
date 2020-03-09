@@ -1,12 +1,12 @@
 package com.example.tokenback.controllers;
 
-import com.example.tokenback.models.CustomToken;
-import com.example.tokenback.models.Customer;
-import com.example.tokenback.models.Department;
-import com.example.tokenback.models.Token;
+import com.example.tokenback.models.*;
+import com.example.tokenback.repository.UserRepository;
+import com.example.tokenback.schema.CustomToken;
 import com.example.tokenback.repository.CustomerRepository;
 import com.example.tokenback.repository.DepartmentRepository;
 import com.example.tokenback.repository.TokenRepository;
+import com.example.tokenback.schema.DepartmentReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +30,17 @@ public class TokenController {
     DepartmentRepository departmentRepository;
 
     @Autowired
+    UserRepository userRepository;
+
+    @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    // Send the token that created by today.
+    //Get All Tokens Created By Today
+    @GetMapping("/today")
+    public List<Token> getAllTokensToday() {
+        return tokenRepository.findByCreatedAtAndStatus(new Date(), ETokenStatus.TOKEN_CREATED);
+    }
+
     // Get All Tokens
     @GetMapping("/")
     public List<Token> getAllTokens() {
@@ -44,7 +52,7 @@ public class TokenController {
     public Token createToken(@Valid @RequestBody CustomToken customToken) {
 
         // custom token has department_id, customer_id
-        System.out.println(customToken.toString());
+//        System.out.println(customToken.toString());
 
         Customer customer = customerRepository.findById(customToken.getCustomer_id())
                 .orElseThrow(() -> new RuntimeException("Error: Please assign customer to the token."));
@@ -55,12 +63,12 @@ public class TokenController {
         Token token = new Token(customToken.getToken_number(),
                 customer,
                 department,
-                customToken.getPriority());
+                customToken.getPriority(), customToken.getStatus());
 
         // save the token
         Token savedToken = tokenRepository.save(token);
         // send the newly created token using the socket channel /topic/tokens/created
-        this.simpMessagingTemplate.convertAndSend("/topic/tokens/created", savedToken);
+        this.simpMessagingTemplate.convertAndSend("/topics/tokens/created", savedToken);
 
         return savedToken;
 
@@ -69,6 +77,7 @@ public class TokenController {
     // Get a Single Token
     @GetMapping("/{id}")
     public Token getTokenById(@PathVariable(value = "id") Long tokenId) {
+        System.out.println("token id = " + tokenId);
         return tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Error: Token not found."));
     }
@@ -78,12 +87,18 @@ public class TokenController {
     public Token updateToken(@PathVariable(value = "id") Long tokenId,
                              @Valid @RequestBody CustomToken customToken) {
 
+        System.out.println("token id = " + tokenId);
+
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Error: Token not found."));
 
         // check if there is user_id in the customToken
         // get the user by the user_id and set token.setUser(user)
-
+        if (customToken.getUser_id() != null) {
+            User user = userRepository.findById(customToken.getUser_id())
+                    .orElseThrow(() -> new RuntimeException("Error: User not found."));
+            token.setUser(user);
+        }
 
         // check if there is counter_id in the customToken
         // get the counter by the counter_id and set token.setCounter(counter)
@@ -94,8 +109,11 @@ public class TokenController {
         token.setServing_end(customToken.getServing_end());
 
         // send the updated token using the socket channel /topic/tokens/updated
+        Token updatedToken = tokenRepository.save(token);
 
-        return tokenRepository.save(token);
+        this.simpMessagingTemplate.convertAndSend("/topics/tokens/updated", updatedToken);
+
+        return updatedToken;
     }
 
     // Delete a Token
@@ -104,15 +122,16 @@ public class TokenController {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Error: Token not found."));
 
-        // send the deleted token using the socket channel /topic/tokens/deleted
         tokenRepository.delete(token);
+        // send the deleted token using the socket channel /topic/tokens/deleted
+        this.simpMessagingTemplate.convertAndSend("/topics/tokens/deleted", token);
 
         return token;
     }
 
     @PostMapping("/department/report")
-    public List<Object[]> departmentReport(@Valid @RequestBody CustomToken customToken) {
-        return tokenRepository.findDepartmentReport(new Date(), new Date());
+    public List<DepartmentReport> departmentReport(@Valid @RequestBody CustomToken customToken) {
+        return tokenRepository.findDepartmentReport(null, null);
     }
 
 }

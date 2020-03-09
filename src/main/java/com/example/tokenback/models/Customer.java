@@ -8,8 +8,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "customers")
@@ -112,5 +110,6 @@ public class Customer {
     public Date getUpdatedAt() {
         return updatedAt;
     }
+
 
 }

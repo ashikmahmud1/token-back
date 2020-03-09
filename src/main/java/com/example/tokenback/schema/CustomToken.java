@@ -1,4 +1,6 @@
-package com.example.tokenback.models;
+package com.example.tokenback.schema;
+
+import com.example.tokenback.models.ETokenStatus;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -21,18 +23,17 @@ public class CustomToken {
 
     private Long counter_id;
 
+    private ETokenStatus status;
+
     public CustomToken() {
     }
 
-    public CustomToken(String token_number, Date serving_start, Date serving_end, Boolean priority, Long user_id, Long customer_id, Long department_id, Long counter_id) {
-        this.token_number = token_number;
-        this.serving_start = serving_start;
-        this.serving_end = serving_end;
-        this.priority = priority;
-        this.user_id = user_id;
-        this.customer_id = customer_id;
-        this.department_id = department_id;
-        this.counter_id = counter_id;
+    public ETokenStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ETokenStatus status) {
+        this.status = status;
     }
 
     public String getToken_number() {

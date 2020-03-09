@@ -20,21 +20,17 @@ public class Token {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     // Token Number (String field)
     @NotBlank
     private String token_number;
 
     @Column(nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @CreatedDate
     private Date createdAt = new Date(); // initialize created date
 
     @Column(nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date
 
@@ -56,12 +52,13 @@ public class Token {
 
     // Customer (Relational field) Token generated for the customer
     // Here we should not do the lazy loading data
-    @OneToOne( optional = false)
+    @OneToOne(optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
     // Department (Relational field) Under which department token added
     // Here we should not do the lazy loading data
+    // If we remove optional than the @ManyToOne() loading will be recursive
     @ManyToOne(optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
@@ -72,18 +69,27 @@ public class Token {
     @JoinColumn(name = "counter_id")
     private Counter counter;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ETokenStatus status;
+
     public Token() {
     }
 
-    public Token(String token_number, Customer customer, Department department, Boolean priority) {
+    public Token(String token_number, Customer customer, Department department, Boolean priority, ETokenStatus status) {
         this.token_number = token_number;
         this.customer = customer;
         this.priority = priority;
         this.department = department;
+        this.status = status;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getToken_number() {
@@ -162,5 +168,12 @@ public class Token {
         this.priority = priority;
     }
 
+    public ETokenStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ETokenStatus status) {
+        this.status = status;
+    }
 
 }
