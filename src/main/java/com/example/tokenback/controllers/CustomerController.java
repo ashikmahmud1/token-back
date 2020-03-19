@@ -48,23 +48,23 @@ public class CustomerController {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Error: Customer not found."));
 
-        customer.setName(customerDetails.getName());
-        customer.setNumber(customerDetails.getNumber());
-        customer.setContact(customerDetails.getContact());
-        customer.setAge(customerDetails.getAge());
+        customer.setName(customerDetails.getName() != null ? customerDetails.getName() : customer.getName());
+        customer.setNumber(customerDetails.getNumber() != null ? customerDetails.getNumber() : customer.getNumber());
+        customer.setContact(customerDetails.getContact() != null ? customerDetails.getContact() : customer.getContact());
+        customer.setAge(customerDetails.getAge() != null ? customerDetails.getAge() : customer.getAge());
 
         return customerRepository.save(customer);
     }
 
     // Delete a Customer
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCustomer(@PathVariable(value = "id") Long customerId) {
+    public Customer deleteCustomer(@PathVariable(value = "id") Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Error: Customer not found."));
 
         customerRepository.delete(customer);
 
-        return ResponseEntity.ok(new MessageResponse("Customer deleted successfully!"));
+        return customer;
     }
 
 }

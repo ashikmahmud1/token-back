@@ -1,5 +1,6 @@
 package com.example.tokenback.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -24,6 +25,9 @@ public class User {
     private Long id;
 
     @NotBlank
+    private String name;
+
+    @NotBlank
     @Size(max = 20)
     private String username;
 
@@ -32,6 +36,7 @@ public class User {
     @Email
     private String email;
 
+    @JsonIgnore
     @NotBlank
     @Size(max = 120)
     private String password;
@@ -56,10 +61,11 @@ public class User {
     public User() {
     }
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, String name) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.name = name;
     }
 
     public Long getId() {
@@ -108,5 +114,13 @@ public class User {
 
     public Date getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

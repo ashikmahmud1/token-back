@@ -37,7 +37,7 @@ public class DisplayController {
         Set<Long> departmentIds = displayDetails.getDepartments();
         Set<Department> departments = new HashSet<>();
 
-        Display display = new Display(displayDetails.getNumber());
+        Display display = new Display(displayDetails.getName(), displayDetails.getFrom_queue(), displayDetails.getTo_queue());
         if (departmentIds != null) {
             departmentIds.forEach(dept_id -> {
                 Department department = departmentRepository.findById(dept_id).
@@ -50,9 +50,9 @@ public class DisplayController {
         return displayRepository.save(display);
     }
 
-    @GetMapping("/number/{number}")
-    public Display getDisplayByNumber(@PathVariable(value = "number") Integer displayNumber) {
-        return displayRepository.findByNumber(displayNumber).
+    @GetMapping("/number/{name}")
+    public Display getDisplayByNumber(@PathVariable(value = "name") String name) {
+        return displayRepository.findByName(name).
                 orElseThrow(() -> new RuntimeException("Error: Display is not found."));
     }
 
@@ -81,7 +81,9 @@ public class DisplayController {
             });
             display.setDepartments(departments);
         }
-        display.setNumber(display.getNumber());
+        display.setName(displayDetails.getName() != null ? displayDetails.getName() : display.getName());
+        display.setFrom_queue(displayDetails.getFrom_queue() != null ? displayDetails.getFrom_queue() : display.getFrom_queue());
+        display.setTo_queue(displayDetails.getTo_queue() != null ? displayDetails.getTo_queue() : display.getTo_queue());
 
         return displayRepository.save(display);
     }

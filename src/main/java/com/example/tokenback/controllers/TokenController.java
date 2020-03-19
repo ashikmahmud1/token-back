@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -38,7 +40,7 @@ public class TokenController {
     //Get All Tokens Created By Today
     @GetMapping("/today")
     public List<Token> getAllTokensToday() {
-        return tokenRepository.findByCreatedAtAndStatus(new Date(), ETokenStatus.TOKEN_CREATED);
+        return tokenRepository.findByCreatedAtAndStatusOrStatus(new Date(), ETokenStatus.TOKEN_CREATED, ETokenStatus.TOKEN_CALLED);
     }
 
     // Get All Tokens
@@ -60,13 +62,24 @@ public class TokenController {
         Department department = departmentRepository.findById(customToken.getDepartment_id())
                 .orElseThrow(() -> new RuntimeException("Error: Please assign department to the token."));
 
-        Token token = new Token(customToken.getToken_number(),
-                customer,
+        // token number should generate by department letter + start_number
+        // after creating the token we should also increase the value of the start_number by one
+        String token_number = department.getLetter() + " - " + department.getStart_number();
+        Token token = new Token(token_number,
                 department,
                 customToken.getPriority(), customToken.getStatus());
 
+        // Here add this token to the customer tokens
+        Set<Token> tokens = new HashSet<>(customer.getTokens());
         // save the token
         Token savedToken = tokenRepository.save(token);
+        tokens.add(savedToken);
+        customer.setTokens(tokens);
+        customerRepository.save(customer);
+
+        department.setStart_number(department.getStart_number() + 1);
+        // update the department
+        departmentRepository.save(department);
         // send the newly created token using the socket channel /topic/tokens/created
         this.simpMessagingTemplate.convertAndSend("/topics/tokens/created", savedToken);
 
@@ -77,7 +90,6 @@ public class TokenController {
     // Get a Single Token
     @GetMapping("/{id}")
     public Token getTokenById(@PathVariable(value = "id") Long tokenId) {
-        System.out.println("token id = " + tokenId);
         return tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Error: Token not found."));
     }
@@ -86,8 +98,6 @@ public class TokenController {
     @PutMapping("/{id}")
     public Token updateToken(@PathVariable(value = "id") Long tokenId,
                              @Valid @RequestBody CustomToken customToken) {
-
-        System.out.println("token id = " + tokenId);
 
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Error: Token not found."));
@@ -108,8 +118,9 @@ public class TokenController {
             token.setCounter(counter);
         }
 
-        token.setPriority(customToken.getPriority());
-        token.setToken_number(customToken.getToken_number());
+        token.setPriority(customToken.getPriority() != null ? customToken.getPriority() : token.getPriority());
+        token.setToken_number(customToken.getToken_number() != null ? customToken.getToken_number() : token.getToken_number());
+        token.setStatus(customToken.getStatus() != null ? customToken.getStatus() : token.getStatus());
         token.setServing_start(customToken.getServing_start());
         token.setServing_end(customToken.getServing_end());
 

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.lang.reflect.Field;
 import java.util.Date;
 
 @Entity
@@ -24,13 +25,15 @@ public class Token {
     @NotBlank
     private String token_number;
 
+    private String type;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.DATE)
     @CreatedDate
     private Date createdAt = new Date(); // initialize created date
 
     @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date
 
@@ -46,15 +49,10 @@ public class Token {
 
     // User (Relational field) Which user called this token
     // Here we should not do the lazy loading data
-    @ManyToOne(optional = false)
+    // @ManyToOne (optional = false) if we don't want to allow null in the foreign key field
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    // Customer (Relational field) Token generated for the customer
-    // Here we should not do the lazy loading data
-    @OneToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
 
     // Department (Relational field) Under which department token added
     // Here we should not do the lazy loading data
@@ -65,7 +63,7 @@ public class Token {
 
     // Counter (Relational field) Under which counter token assigned
     // Here we should not do the lazy loading data
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "counter_id")
     private Counter counter;
 
@@ -76,9 +74,8 @@ public class Token {
     public Token() {
     }
 
-    public Token(String token_number, Customer customer, Department department, Boolean priority, ETokenStatus status) {
+    public Token(String token_number, Department department, Boolean priority, ETokenStatus status) {
         this.token_number = token_number;
-        this.customer = customer;
         this.priority = priority;
         this.department = department;
         this.status = status;
@@ -136,14 +133,6 @@ public class Token {
         this.user = user;
     }
 
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
-
     public Department getDepartment() {
         return department;
     }
@@ -174,6 +163,35 @@ public class Token {
 
     public void setStatus(ETokenStatus status) {
         this.status = status;
+    }
+
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        String newLine = System.getProperty("line.separator");
+
+        result.append( this.getClass().getName() );
+        result.append( " Object {" );
+        result.append(newLine);
+
+        //determine fields declared in this class only (no fields of superclass)
+        Field[] fields = this.getClass().getDeclaredFields();
+
+        //print field names paired with their values
+        for ( Field field : fields  ) {
+            result.append("  ");
+            try {
+                result.append( field.getName() );
+                result.append(": ");
+                //requires access to private field:
+                result.append( field.get(this) );
+            } catch ( IllegalAccessException ex ) {
+                System.out.println(ex);
+            }
+            result.append(newLine);
+        }
+        result.append("}");
+
+        return result.toString();
     }
 
 }

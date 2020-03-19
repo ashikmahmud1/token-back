@@ -47,21 +47,21 @@ public class CounterController {
         Counter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new RuntimeException("Error: Counter not found."));
 
-        counter.setName(counterDetails.getName());
-        counter.setLetter(counterDetails.getLetter());
+        counter.setName(counterDetails.getName() != null ? counterDetails.getName() : counter.getName());
+        counter.setLetter(counterDetails.getLetter() != null ? counterDetails.getLetter() : counter.getLetter());
 
         return counterRepository.save(counter);
     }
 
     // Delete a Counter
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCounter(@PathVariable(value = "id") Long counterId) {
+    public Counter deleteCounter(@PathVariable(value = "id") Long counterId) {
         Counter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new RuntimeException("Error: Counter not found."));
 
         counterRepository.delete(counter);
 
-        return ResponseEntity.ok(new MessageResponse("Counter deleted successfully!"));
+        return counter;
     }
 
 }

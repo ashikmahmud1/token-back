@@ -23,5 +23,5 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
             "and (:toDate is null or a.createdAt <= :toDate) group by a.department")
     List<DepartmentReport> findDepartmentReport(@Param("fromDate") Date fromDate, @Param("toDate") Date toDate);
 
-    List<Token> findByCreatedAtAndStatus(Date date, ETokenStatus status);
+    List<Token> findByCreatedAtAndStatusOrStatus(Date date, ETokenStatus status, ETokenStatus status2);
 }

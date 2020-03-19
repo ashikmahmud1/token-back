@@ -9,10 +9,11 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Set;
 
 @Entity
-@Table(name = "counters")
+@Table(name = "counters", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name")
+})
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
         allowGetters = true)
