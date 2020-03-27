@@ -24,6 +24,7 @@ public class CustomToken {
     private Long counter_id;
 
     private ETokenStatus status;
+    private String type;
 
     public CustomToken() {
     }
@@ -98,6 +99,14 @@ public class CustomToken {
 
     public void setCounter_id(Long counter_id) {
         this.counter_id = counter_id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String toString() {

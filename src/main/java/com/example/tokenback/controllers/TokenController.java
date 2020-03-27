@@ -4,15 +4,14 @@ import com.example.tokenback.models.*;
 import com.example.tokenback.repository.*;
 import com.example.tokenback.schema.CustomToken;
 import com.example.tokenback.schema.DepartmentReport;
+import com.example.tokenback.schema.UserReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -67,15 +66,15 @@ public class TokenController {
         String token_number = department.getLetter() + " - " + department.getStart_number();
         Token token = new Token(token_number,
                 department,
-                customToken.getPriority(), customToken.getStatus());
+                customToken.getPriority(), customToken.getStatus(), customer);
 
-        // Here add this token to the customer tokens
-        Set<Token> tokens = new HashSet<>(customer.getTokens());
-        // save the token
+        if (customToken.getUser_id() != null){
+            // get the user by user_id
+            User user = userRepository.findById(customToken.getUser_id())
+                    .orElseThrow(() -> new RuntimeException("Error: User is not found."));
+            token.setUser(user);
+        }
         Token savedToken = tokenRepository.save(token);
-        tokens.add(savedToken);
-        customer.setTokens(tokens);
-        customerRepository.save(customer);
 
         department.setStart_number(department.getStart_number() + 1);
         // update the department
@@ -121,8 +120,9 @@ public class TokenController {
         token.setPriority(customToken.getPriority() != null ? customToken.getPriority() : token.getPriority());
         token.setToken_number(customToken.getToken_number() != null ? customToken.getToken_number() : token.getToken_number());
         token.setStatus(customToken.getStatus() != null ? customToken.getStatus() : token.getStatus());
-        token.setServing_start(customToken.getServing_start());
-        token.setServing_end(customToken.getServing_end());
+        token.setType(customToken.getType() != null ? customToken.getType() : token.getType());
+        token.setServing_start(customToken.getServing_start() != null ? customToken.getServing_start() : token.getServing_start());
+        token.setServing_end(customToken.getServing_end() != null ? customToken.getServing_end() : token.getServing_end());
 
         // send the updated token using the socket channel /topic/tokens/updated
         Token updatedToken = tokenRepository.save(token);
@@ -145,9 +145,17 @@ public class TokenController {
         return token;
     }
 
-    @PostMapping("/department/report")
+    @PostMapping("/served-report")
     public List<DepartmentReport> departmentReport(@Valid @RequestBody CustomToken customToken) {
-        return tokenRepository.findDepartmentReport(null, null);
+        return tokenRepository.findDepartmentReport(null, null, ETokenStatus.TOKEN_SERVED);
+    }
+
+    @GetMapping("/user-report")
+    public UserReport userReport() {
+        List<User> users = userRepository.findAll();
+        List<Token> tokens = tokenRepository.findByStatus(ETokenStatus.TOKEN_SERVED);
+
+        return new UserReport(users, tokens);
     }
 
 }

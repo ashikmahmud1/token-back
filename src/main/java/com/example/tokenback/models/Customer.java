@@ -8,8 +8,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "customers", uniqueConstraints = {
@@ -45,14 +43,6 @@ public class Customer {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt = new Date(); // initialize updated date
-
-    // Relationship between department and display is one to many
-    // Declare a field departments
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "customer_tokens",
-            joinColumns = @JoinColumn(name = "customer_id"),
-            inverseJoinColumns = @JoinColumn(name = "token_id"))
-    private Set<Token> tokens = new HashSet<>();
 
     public Customer() {
     }
@@ -110,13 +100,5 @@ public class Customer {
 
     public Date getUpdatedAt() {
         return updatedAt;
-    }
-
-    public Set<Token> getTokens() {
-        return tokens;
-    }
-
-    public void setTokens(Set<Token> tokens) {
-        this.tokens = tokens;
     }
 }

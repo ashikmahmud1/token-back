@@ -54,6 +54,11 @@ public class Token {
     @JoinColumn(name = "user_id")
     private User user;
 
+    // Customer (Relational field) Which customer this token will assign
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
     // Department (Relational field) Under which department token added
     // Here we should not do the lazy loading data
     // If we remove optional than the @ManyToOne() loading will be recursive
@@ -74,11 +79,12 @@ public class Token {
     public Token() {
     }
 
-    public Token(String token_number, Department department, Boolean priority, ETokenStatus status) {
+    public Token(String token_number, Department department, Boolean priority, ETokenStatus status, Customer customer) {
         this.token_number = token_number;
         this.priority = priority;
         this.department = department;
         this.status = status;
+        this.customer = customer;
     }
 
     public Long getId() {
@@ -163,6 +169,22 @@ public class Token {
 
     public void setStatus(ETokenStatus status) {
         this.status = status;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public String toString() {

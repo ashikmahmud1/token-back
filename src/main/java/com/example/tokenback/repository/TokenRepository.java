@@ -19,9 +19,12 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     // If fromDate is null then the above condition is true. so the condition will not have
     // any effect to the entire query
     @Query("select count (a.id) as total_served, a.department.id as department_id, a.department.name as department_name from Token a where " +
-            "(:fromDate is null or a.createdAt >= :fromDate)  " +
+            "(:status is null or a.status = :status)" +
+            "and (:fromDate is null or a.createdAt >= :fromDate)" +
             "and (:toDate is null or a.createdAt <= :toDate) group by a.department")
-    List<DepartmentReport> findDepartmentReport(@Param("fromDate") Date fromDate, @Param("toDate") Date toDate);
+    List<DepartmentReport> findDepartmentReport(@Param("fromDate") Date fromDate, @Param("toDate") Date toDate, @Param("status") ETokenStatus status);
 
     List<Token> findByCreatedAtAndStatusOrStatus(Date date, ETokenStatus status, ETokenStatus status2);
+
+    List<Token> findByStatus(ETokenStatus status);
 }

@@ -1,10 +1,8 @@
 package com.example.tokenback.controllers;
 
 import com.example.tokenback.models.Customer;
-import com.example.tokenback.payload.response.MessageResponse;
 import com.example.tokenback.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
