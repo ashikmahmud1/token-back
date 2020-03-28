@@ -115,7 +115,7 @@ public class UserController {
     @GetMapping("/me/reset-password/{id}")
     public ResponseEntity<?> resetOwnPassword(@PathVariable(value = "id") Long userId, @Valid @RequestBody ResetPassword resetPassword) {
         if (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword()))
-            ResponseEntity
+            return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: password and confirm password should be same."));
 
@@ -152,6 +152,5 @@ public class UserController {
                 .badRequest()
                 .body(new MessageResponse("Error: Old password is not correct."));
     }
-
 
 }
