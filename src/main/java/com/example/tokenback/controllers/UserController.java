@@ -72,10 +72,10 @@ public class UserController {
     public ResponseEntity<?> resetPassword(@PathVariable(value = "id") Long userId, @Valid @RequestBody ResetPassword resetPassword) {
         // check if the resetPassword.getPassword and resetPassword.getConfirmPassword is same
         // if not same raise error. password and confirmPassword should be same
-        if (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword())){
+        if (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword())) {
             HashMap<String, String> map = new HashMap<>();
             map.put("status", "400");
-            map.put("message","Error: password and confirm password should be same.");
+            map.put("message", "Error: password and confirm password should be same.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(map);
         }
@@ -125,13 +125,13 @@ public class UserController {
     // logged in user can access this functionality
     // reset currently logged in user password
     // after resetting password send the user including token
-    @GetMapping("/me/reset-password/{id}")
+    @PutMapping("/me/reset-password/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_STAFF') or hasRole('ROLE_TOKENIST')")
     public ResponseEntity<?> resetOwnPassword(@PathVariable(value = "id") Long userId, @Valid @RequestBody ResetPassword resetPassword) {
-        if (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword())){
+        if (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword())) {
             HashMap<String, String> map = new HashMap<>();
             map.put("status", "400");
-            map.put("message","Error: password and confirm password should be same.");
+            map.put("message", "Error: password and confirm password should be same.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(map);
         }
@@ -140,7 +140,7 @@ public class UserController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Error: User not found."));
         // compare the user password with resetPassword.getOldPassword()
-        if (encoder.matches(resetPassword.getOldPassword(), user.getPassword())){
+        if (encoder.matches(resetPassword.getOldPassword(), user.getPassword())) {
             user.setPassword(encoder.encode(resetPassword.getPassword()));
             // save the user with the new password
             userRepository.save(user);
@@ -164,7 +164,7 @@ public class UserController {
         }
         HashMap<String, String> map = new HashMap<>();
         map.put("status", "400");
-        map.put("message","Error: Old password is not correct.");
+        map.put("message", "Error: Old password is incorrect.");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(map);
     }
@@ -181,7 +181,7 @@ public class UserController {
         // set the token.user = null
         // now delete the user
         List<Token> tokens = tokenRepository.findByUser(user);
-        for (Token token:tokens){
+        for (Token token : tokens) {
             token.setUser(null);
         }
 
