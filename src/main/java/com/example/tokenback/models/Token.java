@@ -62,8 +62,8 @@ public class Token {
     // Department (Relational field) Under which department token added
     // Here we should not do the lazy loading data
     // If we remove optional than the @ManyToOne() loading will be recursive
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "department_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "department_id")
     private Department department;
 
     // Counter (Relational field) Under which counter token assigned

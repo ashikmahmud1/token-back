@@ -1,7 +1,11 @@
 package com.example.tokenback.schema;
 
+import javax.validation.constraints.NotBlank;
+
 public class CustomDepartment {
+    @NotBlank
     private String name;
+    @NotBlank
     private String letter;
     private Integer start_number;
     private String color;

@@ -4,9 +4,11 @@ import com.example.tokenback.models.*;
 import com.example.tokenback.repository.*;
 import com.example.tokenback.schema.CustomToken;
 import com.example.tokenback.schema.DepartmentReport;
+import com.example.tokenback.schema.ServedReport;
 import com.example.tokenback.schema.UserReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -44,12 +46,14 @@ public class TokenController {
 
     // Get All Tokens
     @GetMapping("/")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Token> getAllTokens() {
         return tokenRepository.findAll();
     }
 
     // Create a new Token
     @PostMapping("/")
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN') or hasRole('ROLE_STAFF')")
     public Token createToken(@Valid @RequestBody CustomToken customToken) {
 
         // custom token has department_id, customer_id
@@ -95,6 +99,7 @@ public class TokenController {
 
     // Update a Token
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_STAFF') or hasRole('ROLE_ADMIN')")
     public Token updateToken(@PathVariable(value = "id") Long tokenId,
                              @Valid @RequestBody CustomToken customToken) {
 
@@ -134,6 +139,7 @@ public class TokenController {
 
     // Delete a Token
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Token deleteToken(@PathVariable(value = "id") Long tokenId) {
         Token token = tokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Error: Token not found."));
@@ -146,11 +152,13 @@ public class TokenController {
     }
 
     @PostMapping("/served-report")
-    public List<DepartmentReport> departmentReport(@Valid @RequestBody CustomToken customToken) {
-        return tokenRepository.findDepartmentReport(null, null, ETokenStatus.TOKEN_SERVED);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public List<DepartmentReport> departmentReport(@Valid @RequestBody ServedReport servedReport) {
+        return tokenRepository.findDepartmentReport(servedReport.getFrom_date(), servedReport.getTo_date(), ETokenStatus.TOKEN_SERVED);
     }
 
     @GetMapping("/user-report")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public UserReport userReport() {
         List<User> users = userRepository.findAll();
         List<Token> tokens = tokenRepository.findByStatus(ETokenStatus.TOKEN_SERVED);

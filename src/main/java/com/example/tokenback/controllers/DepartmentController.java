@@ -1,6 +1,7 @@
 package com.example.tokenback.controllers;
 
 import com.example.tokenback.models.Department;
+import com.example.tokenback.models.Display;
 import com.example.tokenback.models.Token;
 import com.example.tokenback.repository.DepartmentRepository;
 import com.example.tokenback.repository.DisplayRepository;
@@ -8,11 +9,16 @@ import com.example.tokenback.repository.TokenRepository;
 import com.example.tokenback.schema.CustomDepartment;
 import com.example.tokenback.schema.ResetToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -37,21 +43,31 @@ public class DepartmentController {
         return departmentRepository.findAll();
     }
 
-    // Get All Departments
-//    @GetMapping("/{display_id}/departments")
-//    public List<Department> getAllDepartmentsByDisplay(@PathVariable Long display_id) {
-//        return departmentRepository.findByDisplay_Id(display_id);
-//    }
-
     // Create a new Department
     @PostMapping("/")
-    public Department createDepartment(@Valid @RequestBody CustomDepartment departmentDetails) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> createDepartment(@Valid @RequestBody CustomDepartment departmentDetails) {
 
+        // check the department name and letter should be different
+        if (departmentRepository.existsByName(departmentDetails.getName())) {
+            HashMap<String, String> map = new HashMap<>();
+            map.put("status", "400");
+            map.put("message","Error: Department Name is already in exist!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(map);
+        }
+        if (departmentRepository.existsByLetter(departmentDetails.getLetter())) {
+            HashMap<String, String> map = new HashMap<>();
+            map.put("status", "400");
+            map.put("message","Error: Department Letter is already in exist!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(map);
+        }
         Department department = new Department(departmentDetails.getName(),
                 departmentDetails.getLetter(), departmentDetails.getStart_number(),
                 departmentDetails.getColor());
 
-        return departmentRepository.save(department);
+        return ResponseEntity.ok(departmentRepository.save(department));
     }
 
     // Get a Single Department
@@ -63,6 +79,7 @@ public class DepartmentController {
 
     // Update a Department
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Department updateDepartment(@PathVariable(value = "id") Long departmentId,
                                        @Valid @RequestBody CustomDepartment departmentDetails) {
 
@@ -78,6 +95,7 @@ public class DepartmentController {
     }
 
     @PutMapping("/reset/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Department resetDepartment(@PathVariable(value = "id") Long departmentId, @Valid @RequestBody ResetToken resetToken) {
 
         Department department = departmentRepository.findById(departmentId)
@@ -89,9 +107,6 @@ public class DepartmentController {
 
         tokenRepository.saveAll(resetToken.getTokens());
 
-        for (Token token : resetToken.getTokens()) {
-            System.out.println(token.toString());
-        }
         this.simpMessagingTemplate.convertAndSend("/topics/tokens/reset", resetDepartment);
 
 
@@ -100,9 +115,31 @@ public class DepartmentController {
 
     // Delete a Department
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Department deleteDepartment(@PathVariable(value = "id") Long departmentId) {
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new RuntimeException("Error: Department not found."));
+
+        // first check
+        if (department.getStart_number() != 1)
+            throw new RuntimeException("Error: Reset the department first.");
+
+        // get all the tokens which contains the department
+        // token.setDepartment = null
+        // save the tokens
+        // get all the display which contains this department
+        // display.departments remove the department
+        // save the display
+        List<Token> tokens = tokenRepository.findByDepartment(department);
+        for (Token token : tokens) {
+            token.setDepartment(null);
+        }
+
+        List<Display> displays = displayRepository.findAll();
+
+        for (Display display : displays) {
+            display.setDepartments(display.getDepartments().stream().filter(department1 -> !department1.getId().equals(department.getId())).collect(Collectors.toSet()));
+        }
 
         departmentRepository.delete(department);
 

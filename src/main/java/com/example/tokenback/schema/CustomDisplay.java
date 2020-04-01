@@ -1,9 +1,11 @@
 package com.example.tokenback.schema;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Set;
 
 public class CustomDisplay {
 
+    @NotBlank
     private String name;
 
     private Integer from_queue;

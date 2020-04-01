@@ -38,10 +38,10 @@ public class User {
 
     @JsonIgnore
     @NotBlank
-    @Size(max = 120)
+    @Size(min = 6)
     private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))

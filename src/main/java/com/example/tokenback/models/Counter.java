@@ -12,6 +12,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "counters", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "letter"),
         @UniqueConstraint(columnNames = "name")
 })
 @EntityListeners(AuditingEntityListener.class)

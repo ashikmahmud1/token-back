@@ -1,7 +1,6 @@
 package com.example.tokenback.repository;
 
-import com.example.tokenback.models.ETokenStatus;
-import com.example.tokenback.models.Token;
+import com.example.tokenback.models.*;
 import com.example.tokenback.schema.DepartmentReport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +26,12 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     List<Token> findByCreatedAtAndStatusOrStatus(Date date, ETokenStatus status, ETokenStatus status2);
 
     List<Token> findByStatus(ETokenStatus status);
+
+    List<Token> findByCounter(Counter counter);
+
+    List<Token> findByDepartment(Department department);
+
+    List<Token> findByUser(User user);
+
+    List<Token> findByCustomer(Customer customer);
 }

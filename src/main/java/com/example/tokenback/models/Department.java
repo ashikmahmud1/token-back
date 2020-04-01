@@ -11,7 +11,8 @@ import java.util.Date;
 
 @Entity
 @Table(name = "departments", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "name")
+        @UniqueConstraint(columnNames = "name"),
+        @UniqueConstraint(columnNames = "letter")
 })
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},

@@ -6,9 +6,13 @@ import com.example.tokenback.repository.DepartmentRepository;
 import com.example.tokenback.repository.DisplayRepository;
 import com.example.tokenback.schema.CustomDisplay;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,14 +30,23 @@ public class DisplayController {
 
     // Get All Displays
     @GetMapping("/")
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN') or hasRole('ROLE_STAFF')")
     public List<Display> getAllDisplays() {
         return displayRepository.findAll();
     }
 
     // Create a new Display
     @PostMapping("/")
-    public Display createDisplay(@Valid @RequestBody CustomDisplay displayDetails) {
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> createDisplay(@Valid @RequestBody CustomDisplay displayDetails) {
 
+        if (displayRepository.existsByName(displayDetails.getName())){
+            HashMap<String, String> map = new HashMap<>();
+            map.put("status", "400");
+            map.put("message","Error: Display Name is already in exist!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(map);
+        }
         Set<Long> departmentIds = displayDetails.getDepartments();
         Set<Department> departments = new HashSet<>();
 
@@ -47,7 +60,7 @@ public class DisplayController {
             display.setDepartments(departments);
         }
 
-        return displayRepository.save(display);
+        return ResponseEntity.ok(displayRepository.save(display));
     }
 
     @GetMapping("/number/{name}")
@@ -65,6 +78,7 @@ public class DisplayController {
 
     // Update a Display
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN')")
     public Display updateDisplay(@PathVariable(value = "id") Long displayId,
                                  @Valid @RequestBody CustomDisplay displayDetails) {
 
@@ -90,6 +104,7 @@ public class DisplayController {
 
     // Delete a Display
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN')")
     public Display deleteDisplay(@PathVariable(value = "id") Long displayId) {
         Display display = displayRepository.findById(displayId)
                 .orElseThrow(() -> new RuntimeException("Error: Display not found."));

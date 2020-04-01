@@ -1,8 +1,11 @@
 package com.example.tokenback.controllers;
 
 import com.example.tokenback.models.Customer;
+import com.example.tokenback.models.Token;
 import com.example.tokenback.repository.CustomerRepository;
+import com.example.tokenback.repository.TokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -16,6 +19,9 @@ public class CustomerController {
     @Autowired
     CustomerRepository customerRepository;
 
+    @Autowired
+    TokenRepository tokenRepository;
+
     // Get All Customers
     @GetMapping("/")
     public List<Customer> getAllCustomers() {
@@ -24,6 +30,7 @@ public class CustomerController {
 
     // Create a new Customer
     @PostMapping("/")
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN')")
     public Customer createCustomer(@Valid @RequestBody Customer customerDetails) {
         Customer customer = new Customer(customerDetails.getName(),
                 customerDetails.getNumber(), customerDetails.getContact(),
@@ -40,6 +47,7 @@ public class CustomerController {
 
     // Update a Customer
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN')")
     public Customer updateCustomer(@PathVariable(value = "id") Long customerId,
                                    @Valid @RequestBody Customer customerDetails) {
 
@@ -56,10 +64,15 @@ public class CustomerController {
 
     // Delete a Customer
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_TOKENIST') or hasRole('ROLE_ADMIN')")
     public Customer deleteCustomer(@PathVariable(value = "id") Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Error: Customer not found."));
 
+        List<Token> tokens = tokenRepository.findByCustomer(customer);
+        for (Token token:tokens){
+            token.setCustomer(null);
+        }
         customerRepository.delete(customer);
 
         return customer;

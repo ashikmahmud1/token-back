@@ -30,7 +30,7 @@ public class Display {
 
     // Relationship between department and display is one to many
     // Declare a field departments
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "display_departments",
             joinColumns = @JoinColumn(name = "display_id"),
             inverseJoinColumns = @JoinColumn(name = "department_id"))

@@ -1,5 +1,6 @@
 package com.example.tokenback.controllers;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +20,9 @@ import com.example.tokenback.repository.UserRepository;
 import com.example.tokenback.security.jwt.JwtUtils;
 import com.example.tokenback.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -74,17 +77,23 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            HashMap<String, String> map = new HashMap<>();
+            map.put("status", "400");
+            map.put("message","Error: Username is already taken!");
             return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(map);
         }
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
+            HashMap<String, String> map = new HashMap<>();
+            map.put("status", "400");
+            map.put("message","Error: Email is already in use!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(map);
         }
 
         // Create new user's account
